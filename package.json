@@ -1,0 +1,11 @@
+{
+  "name": "jayos-web-browser",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node dev-server.js"
+  },
+  "dependencies": {
+    "cheerio": "1.0.0"
+  }
+}
