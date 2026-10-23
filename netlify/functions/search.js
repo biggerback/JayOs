@@ -1,2 +1,0 @@
-const {search}=require('../../lib/browser');
-exports.handler=async(event)=>{if(event.httpMethod!=='GET')return {statusCode:405,body:'Method not allowed'};try{return {statusCode:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store'},body:JSON.stringify(await search(String(event.queryStringParameters?.q||'')))}}catch(e){return {statusCode:502,headers:{'Content-Type':'application/json'},body:JSON.stringify({error:e.message})}}};
