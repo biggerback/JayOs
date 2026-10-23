@@ -1,7 +1,7 @@
 {
   // ...
   "vars": {
-    "SEARXNG_BASE_URL": "https://baresearch.org/"
+    "SEARXNG_BASE_URL": "https://search.jeremyh.xyz/"
   },
   // ...
 }
