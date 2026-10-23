@@ -47,5 +47,12 @@ export default {async fetch(request,env){const url=new URL(request.url);if(url.p
  try{return json(url.pathname==='/api/search'?await search((url.searchParams.get('q')||'').trim()):await page(url.searchParams.get('url')||''))}
  catch(e){return json({error:e?.message||'Browser request failed'},502)}
  }
- return env.ASSETS.fetch(request);
+ if (!env.ASSETS) {
+  return new Response(
+    "JayOS assets binding is missing. Check wrangler.jsonc.",
+    { status: 500 }
+  );
+}
+
+return env.ASSETS.fetch(request);
 }};
