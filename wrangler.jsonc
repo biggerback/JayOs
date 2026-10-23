@@ -1,9 +1,7 @@
-
 {
-  "name": "jayos",
-  "compatibility_date": "2026-10-22",
-  "main": "./worker.js",
-  "assets": {
-    "directory": "./public"
-  }
+  // ...
+  "vars": {
+    "SEARXNG_BASE_URL": "https://www.isci.si/"
+  },
+  // ...
 }
