@@ -1,7 +1,7 @@
 {
   // ...
   "vars": {
-    "SEARXNG_BASE_URL": "https://www.isci.si/"
+    "SEARXNG_BASE_URL": "https://search.inetol.net/"
   },
   // ...
 }
