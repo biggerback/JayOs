@@ -1,11 +1,10 @@
+
 {
-  // ...
-  "observability": {
-    "logs": {
-      "enabled": true,
-      "invocation_logs": true,
-      "persist": true
-    }
-  },
-  // ...
+  "name": "jayos",
+  "compatibility_date": "2026-10-22",
+  "main": "./worker.js",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  }
 }
