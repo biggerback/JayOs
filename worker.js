@@ -19,13 +19,28 @@ async function fetchPublic(url,accept,redirects=0){if(redirects>3)throw Error('T
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function plain(html){return html.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi,' ').replace(/<(?:nav|footer|header|aside|form|noscript|svg|iframe)\b[^>]*>[\s\S]*?<\/(?:nav|footer|header|aside|form|noscript|svg|iframe)\s*>/gi,' ').replace(/<\/(?:p|div|section|article|h[1-6]|li|br|tr)>/gi,'\n\n').replace(/<br\s*\/?\s*>/gi,'\n').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/[ \t]+/g,' ').replace(/\n\s*\n\s*\n/g,'\n\n').trim()}
-async function search(q,env){if(!q||q.length>180)throw Error('Search must be 1–180 characters');
- const base=String(env.SEARXNG_BASE_URL||'').trim();if(!base)throw Error('SearXNG is not configured. Set SEARXNG_BASE_URL in Cloudflare Worker settings.');
- const u=safeURL(base);u.pathname=u.pathname.replace(/\/$/,'')+'/search';u.search='';u.searchParams.set('q',q);u.searchParams.set('format','json');
- const r=await fetchPublic(u.href,'application/json');if(!r.type.toLowerCase().includes('json'))throw Error('SearXNG instance did not return JSON (its API may be disabled)');
- let data;try{data=JSON.parse(r.body)}catch{throw Error('Invalid SearXNG JSON response')}
- if(!Array.isArray(data.results))throw Error('SearXNG response has no results array');
- return {results:data.results.slice(0,25).flatMap(x=>{try{const url=safeURL(x.url).href;return [{title:String(x.title||url).slice(0,200),url,host:new URL(url).hostname,snippet:plain(String(x.content||'')).slice(0,450)}]}catch{return []}})};
+// Free built-in Wikipedia search. No API key, SearXNG instance or Cloudflare variables needed.
+async function search(q,env){
+ if(!q||q.length>180)throw Error('Search must be 1–180 characters');
+ const api=new URL('https://en.wikipedia.org/w/api.php');
+ api.searchParams.set('action','query');
+ api.searchParams.set('generator','search');
+ api.searchParams.set('gsrsearch',q);
+ api.searchParams.set('gsrlimit','20');
+ api.searchParams.set('prop','extracts');
+ api.searchParams.set('exintro','1');
+ api.searchParams.set('explaintext','1');
+ api.searchParams.set('exsentences','2');
+ api.searchParams.set('format','json');
+ api.searchParams.set('formatversion','2');
+ const r=await fetchPublic(api.href,'application/json');
+ if(!r.type.toLowerCase().includes('json'))throw Error('Wikipedia search returned an unexpected response');
+ let data;try{data=JSON.parse(r.body)}catch{throw Error('Wikipedia returned invalid JSON')}
+ const pages=Array.isArray(data?.query?.pages)?data.query.pages:[];
+ return {provider:'Wikipedia',results:pages.filter(p=>p.title).map(p=>{
+   const url='https://en.wikipedia.org/wiki/'+encodeURIComponent(p.title.replace(/ /g,'_'));
+   return {title:p.title,url,host:'en.wikipedia.org',snippet:String(p.extract||'').slice(0,450)}
+ })};
 }
 async function page(raw){const r=await fetchPublic(raw,'text/html,application/xhtml+xml');if(!/html/i.test(r.type))throw Error('This page is not HTML');
  const match=r.body.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);const title=plain(match?.[1]||'').slice(0,200)||new URL(r.url).hostname;
